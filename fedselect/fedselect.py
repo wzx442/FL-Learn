@@ -375,7 +375,8 @@ def load_model(args: Any) -> nn.Module:
     args.device = device # 将设备设置为GPU或CPU
     # model = resnet18(pretrained=args.pretrained_init) # 加载预训练的ResNet18模型
     #[load_resnet18]
-    model = resnet18(weights=models.ResNet18_Weights.DEFAULT) # 加载预训练的ResNet18模型
+    # model = resnet18(weights=models.ResNet18_Weights.DEFAULT) # 加载预训练的ResNet18模型
+    model = resnet18(weights = None)
     num_ftrs = model.fc.in_features # 获取模型的全连接层输入特征数量
     model.fc = nn.Linear(num_ftrs, args.num_classes) # 将模型的全连接层替换为新的线性层
     model = model.to(device) # 将模型移动到GPU或CPU
