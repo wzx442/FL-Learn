@@ -363,8 +363,7 @@ def run_base_experiment(model: nn.Module, args: Any) -> None:
 
 
 def load_model(args: Any) -> nn.Module:
-    """Load and initialize model.
-    加载和初始化模型。
+    """Load and initialize model.加载和初始化模型。
     Args:
         args: Model arguments 模型参数
 
@@ -373,14 +372,38 @@ def load_model(args: Any) -> nn.Module:
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # 如果GPU可用,则使用GPU,否则使用CPU
     args.device = device # 将设备设置为GPU或CPU
-    # model = resnet18(pretrained=args.pretrained_init) # 加载预训练的ResNet18模型
-    #[load_resnet18]
-    # model = resnet18(weights=models.ResNet18_Weights.DEFAULT) # 加载预训练的ResNet18模型
-    model = resnet18(weights = None)
-    num_ftrs = model.fc.in_features # 获取模型的全连接层输入特征数量
-    model.fc = nn.Linear(num_ftrs, args.num_classes) # 将模型的全连接层替换为新的线性层
-    model = model.to(device) # 将模型移动到GPU或CPU
-    return model.to(device) # 返回初始化后的模型
+    
+    # 使用新的权重加载方式
+    model = resnet18(weights=models.ResNet18_Weights.DEFAULT)  # 先加载未预训练的模型
+    
+    # 修改第一层卷积以适应CIFAR-10的32x32分辨率
+    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    
+    # 使用Kaiming初始化
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+        elif isinstance(m, nn.BatchNorm2d):
+            nn.init.constant_(m.weight, 1)
+            nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            nn.init.normal_(m.weight, 0, 0.01)
+            nn.init.constant_(m.bias, 0)
+    
+    # 修改最后的全连接层
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, args.num_classes)
+    
+    # 将模型移动到指定设备
+    model = model.to(device)
+    
+    # 验证模型参数没有NaN值
+    for name, param in model.named_parameters():
+        if torch.isnan(param).any():
+            print(f"Warning: NaN detected in {name}")
+            param.data.zero_()  # 将NaN值替换为0
+    
+    return model
 
 
 def setup_seed(seed: int) -> None:

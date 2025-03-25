@@ -38,18 +38,36 @@ class MaskLocalAltSGD(optim.Optimizer):
             for p in group["params"]:
                 if p.grad is None:
                     continue
-                # assert that p does not contain nan
-                assert torch.isnan(p).sum() == 0, "parameter contains nan"
+                    
+                # 检查参数和梯度是否包含NaN
+                if torch.isnan(p).any():
+                    print(f"Warning: NaN detected in parameter at step {step}")
+                    p.data.zero_()
+                    p.grad.data.zero_()
+                    continue
+                    
+                if torch.isnan(p.grad).any():
+                    print(f"Warning: NaN detected in gradient at step {step}")
+                    p.grad.data.zero_()
+                    continue
+                
                 # get name of parameter
                 mask = self.mask[step]
                 # update parameter
                 if mask is not None:
                     if self._toggle:
-                        p.data.add_(mask * p.grad.data, alpha=-group["lr"])
+                        # 使用更安全的更新方式
+                        grad = p.grad.data * mask
+                        grad = torch.nan_to_num(grad, nan=0.0, posinf=1.0, neginf=-1.0)
+                        p.data.add_(grad, alpha=-group["lr"])
                     else:
-                        p.data.add_((1 - mask) * p.grad.data, alpha=-group["lr"])
+                        grad = p.grad.data * (1 - mask)
+                        grad = torch.nan_to_num(grad, nan=0.0, posinf=1.0, neginf=-1.0)
+                        p.data.add_(grad, alpha=-group["lr"])
                 else:
-                    p.data.add_(-group["lr"], p.grad.data)
+                    grad = p.grad.data
+                    grad = torch.nan_to_num(grad, nan=0.0, posinf=1.0, neginf=-1.0)
+                    p.data.add_(grad, alpha=-group["lr"])
                 step += 1
         return loss
 

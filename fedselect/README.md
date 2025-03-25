@@ -70,3 +70,41 @@ python fedselect.py --dataset cifar10 --num_users 5
 > Client Accs:  tensor([0.8153])  | Mean:  tensor(0.8153)
 > 
 > 每一个输出是一次联邦学习的平均准确率，--com_rounds 默认是4
+
+3. sf
+```bash
+python fedselect.py --dataset cifar10 --num_users 10 --lr 0.01
+```
+
+- 结果
+> 
+> Client Accs:  tensor([0.9330])  | Mean:  tensor(0.9330)
+> 
+> Client Accs:  tensor([0.9600])  | Mean:  tensor(0.9600)
+> 
+> Client Accs:  tensor([0.9448])  | Mean:  tensor(0.9448)
+> 
+> ('1: 1280', '0: 3840', 'fc.weight', 0.75)
+> 
+> Mask Sparsity: 24.99%
+> 
+> Client Accs:  tensor([0.9408])  | Mean:  tensor(0.9408)
+> 
+4. 使用凯明初始化并且加载预训练权重
+```bash
+python fedselect.py --dataset cifar10 --num_users 10 --lr 0.01
+```
+
+- 结果
+
+> Client Accs:  tensor([0.9404])  | Mean:  tensor(0.9404)
+> 
+> Client Accs:  tensor([0.9688])  | Mean:  tensor(0.9688)
+> 
+> Client Accs:  tensor([0.9535])  | Mean:  tensor(0.9535)
+> 
+> ('1: 1280', '0: 3840', 'fc.weight', 0.75)
+> 
+> Mask Sparsity: 24.99%
+> 
+> Client Accs:  tensor([0.9756])  | Mean:  tensor(0.9756)
