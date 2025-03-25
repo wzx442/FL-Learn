@@ -1,15 +1,5 @@
 # FedSelect: 基于参数自定义选择的个性化联邦学习
 
-<p>
-    <a href="https://www.python.org/">
-        <img alt="Build" src="https://img.shields.io/badge/Python-3.7+-1f425f.svg?color=purple">
-    </a>
-    <a href="https://copyright.illinois.edu/">
-        <img alt="License" src="https://img.shields.io/badge/License-MIT-blue">
-    </a>
-</p>
-
-这是 CVPR 2024 论文 "FedSelect: Personalized Federated Learning with Customized Selection of Parameters for Fine-Tuning" 的官方代码仓库。
 
 ## 项目简介
 
@@ -32,18 +22,6 @@ FedSelect 是一个创新的个性化联邦学习框架，它允许客户端自�
 - NumPy
 - tqdm
 
-## 安装说明
-
-1. 克隆仓库：
-```bash
-git clone https://github.com/[username]/fedselect.git
-cd fedselect
-```
-
-2. 安装依赖：
-```bash
-pip install torch numpy tqdm
-```
 
 ## 使用方法
 
@@ -60,26 +38,8 @@ python fedselect.py --dataset cifar10 --num_users 100 --frac 1.0
 - `--dataset`: 选择数据集
 - `--num_users`: 联邦学习中的客户端数量
 - `--lth_epoch_iters`: 本地交替优化迭代次数
+- `--com_rounds`: 联邦学习迭代轮数
 
-## 引用
-
-如果您使用了本项目的代码，请引用我们的论文：
-
-```bibtex
-@misc{tamirisa2024fedselectpersonalizedfederatedlearning,
-      title={FedSelect: Personalized Federated Learning with Customized Selection of Parameters for Fine-Tuning}, 
-      author={Rishub Tamirisa and Chulin Xie and Wenxuan Bao and Andy Zhou and Ron Arel and Aviv Shamsian},
-      year={2024},
-      eprint={2404.02478},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2404.02478}, 
-}
-```
-
-## 许可证
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
 ## 运行记录
 
@@ -91,3 +51,22 @@ python fedselect.py --dataset cifar10 --num_users 10 --frac 1.0
 
 - 结果
 > Client Accs:  tensor([0.9569, 0.7776, 0.8855, 0.9643, 0.9463, 0.8544, 0.9668, 0.9145, 0.9203, 0.9114])  | Mean:  tensor(0.9098)
+
+2. 修改好预训练
+```bash
+python fedselect.py --dataset cifar10 --num_users 5
+```
+- 结果
+> Client Accs:  tensor([0.7142])  | Mean:  tensor(0.7142)
+> 
+> Client Accs:  tensor([0.6339])  | Mean:  tensor(0.6339)
+> 
+> Client Accs:  tensor([0.8003])  | Mean:  tensor(0.8003)
+> 
+> ('1: 1280', '0: 3840', 'fc.weight', 0.75)
+> 
+> Mask Sparsity: 72.46%
+> 
+> Client Accs:  tensor([0.8153])  | Mean:  tensor(0.8153)
+> 
+> 每一个输出是一次联邦学习的平均准确率，--com_rounds 默认是4
