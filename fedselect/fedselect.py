@@ -22,6 +22,10 @@ import random
 from torchvision.models import resnet18
 from torchvision import models
 
+# =============================================
+# LOAD RESNET18 MODEL SECTION
+# =============================================
+# [load_resnet18] - 点击此处跳转到模型加载位置
 
 def evaluate(
     model: nn.Module, ldr_test: torch.utils.data.DataLoader, args: Any
@@ -155,7 +159,9 @@ def fedselect_algorithm(
     client_state_dict_prev = {i: copy.deepcopy(initial_state_dict) for i in idxs_users} # 每个客户端的上一轮模型状态
     client_masks = {i: None for i in idxs_users} # 每个客户端的掩码
     client_masks_prev = {i: init_mask_zeros(model) for i in idxs_users} # 每个客户端的上一轮掩码
+    # noinspection PyTypeHints
     server_accumulate_mask = OrderedDict()  # 服务器累加掩码
+    # noinspection PyTypeHints
     server_weights = OrderedDict()  # 服务器权重
     lth_iters = args.lth_epoch_iters # 彩票迭代次数
     prune_rate = args.prune_percent / 100 # 剪枝率
@@ -233,7 +239,9 @@ def fedselect_algorithm(
                     client_masks[i], # 客户端掩码
                     client_state_dicts[i] # 客户端模型状态
                 )
+            # noinspection PyTypeHints
             server_accumulate_mask = OrderedDict() # 服务器累加掩码
+            # noinspection PyTypeHints
             server_weights = OrderedDict() # 服务器权重
 
     # 计算跨客户端准确率
@@ -366,7 +374,8 @@ def load_model(args: Any) -> nn.Module:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # 如果GPU可用,则使用GPU,否则使用CPU
     args.device = device # 将设备设置为GPU或CPU
     # model = resnet18(pretrained=args.pretrained_init) # 加载预训练的ResNet18模型
-    model = resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1) # 加载预训练的ResNet18模型
+    #[load_resnet18]
+    model = resnet18(weights=models.ResNet18_Weights.DEFAULT) # 加载预训练的ResNet18模型
     num_ftrs = model.fc.in_features # 获取模型的全连接层输入特征数量
     model.fc = nn.Linear(num_ftrs, args.num_classes) # 将模型的全连接层替换为新的线性层
     model = model.to(device) # 将模型移动到GPU或CPU
@@ -374,8 +383,7 @@ def load_model(args: Any) -> nn.Module:
 
 
 def setup_seed(seed: int) -> None:
-    """Set random seeds for reproducibility.
-    设置随机种子以确保可重复性。
+    """Set random seeds for reproducibility.设置随机种子以确保可重复性。
     Args:
         seed: Random seed value 随机种子值  
     """
