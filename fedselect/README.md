@@ -53,15 +53,13 @@ pip install torch numpy tqdm
 
 2. 运行训练：
 ```bash
-python fedselect.py --dataset cifar10 --num_users 100 --epochs 200
+python fedselect.py --dataset cifar10 --num_users 100 --frac 1.0
 ```
 
 主要参数说明：
 - `--dataset`: 选择数据集
 - `--num_users`: 联邦学习中的客户端数量
-- `--epochs`: 训练轮数
-- `--local_ep`: 每轮本地训练的轮数
-- `--local_bs`: 本地训练的批次大小
+- `--lth_epoch_iters`: 本地交替优化迭代次数
 
 ## 引用
 
