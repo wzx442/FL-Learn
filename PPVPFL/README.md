@@ -43,7 +43,7 @@ python fedselect.py --dataset cifar10 --num_users 100 --frac 1.0
 
 ## 运行记录
 
-1. 小样本测试
+1. 10个客户端，resnet18，cifar10，本地训练15轮
 
 ```bash
 python fedselect.py --dataset cifar10 --num_users 10 --frac 1.0
@@ -53,3 +53,18 @@ python fedselect.py --dataset cifar10 --num_users 10 --frac 1.0
 > Client Accs:  tensor([0.9569, 0.7776, 0.8855, 0.9643, 0.9463, 0.8544, 0.9668, 0.9145, 0.9203, 0.9114])  | Mean:  tensor(0.9098)
 
 
+2. 10个客户端，resnet18，本地训练10轮
+```bash
+python main.py --dataset cifar10  --frac 1.0 --num_users 10 --model resnet18  
+```
+
+- 结果
+> Client Accs:  tensor([0.9633, 0.8252, 0.8846, 0.8350, 0.9434, 0.7434, 0.9785, 0.9057, 0.8436, 0.8818])  | Mean:  tensor(0.8805)
+
+3.  10个客户端，cifar10，resnet18，本地训练15轮
+```bash
+python main.py --dataset cifar10  --frac 1.0 --num_users 10 --model resnet18 --la_epochs 15
+```
+
+- 结果
+> Client Accs:  tensor([0.9707, 0.7997, 0.9736, 0.5495, 0.9609, 0.8936, 0.9785, 0.8191, 0.9086, 0.9521])  | Mean:  tensor(0.8806)

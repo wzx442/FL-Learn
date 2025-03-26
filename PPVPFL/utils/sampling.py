@@ -72,6 +72,10 @@ def noniid(
             - 将客户端ID映射到分配的数据索引数组的字典
             - 用于数据划分的随机类别分配数组
     """
+    if shard_per_user == 0:
+        # 如果 shard_per_user 为 0，则使用 IID 方式分配数据
+        return iid(dataset, num_users), np.array([])
+
     dict_users, all_idxs = {i: np.array([], dtype="int64") for i in range(num_users)}, [
         i for i in range(len(dataset))
     ]
@@ -86,7 +90,6 @@ def noniid(
         else:
             targets.append(elem[1])
     # 新代码###########################
-
 
     # dictionary of indices in the dataset for each label
     # 字典,键为类别标签,值为该类别标签在数据集中的索引列表

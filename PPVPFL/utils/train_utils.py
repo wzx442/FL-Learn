@@ -73,8 +73,15 @@ def get_data(
         dict_users_test: Dictionary mapping users to test data indices 字典映射用户到测试数据索引
         rand_set_all: Random set assignments for non-iid splitting 非独立同分布划分随机集分配
     """
-    dataset_train = datasets.CIFAR10("data/cifar10", train=True, download=True, transform=trans_cifar10_train)
-    dataset_test = datasets.CIFAR10("data/cifar10", train=False, download=True, transform=trans_cifar10_val)
+    if args.dataset == 'mnist':
+        dataset_train = datasets.MNIST("data/mnist", train=True, download=True, transform=trans_mnist)
+        dataset_test = datasets.MNIST("data/mnist", train=False, download=True, transform=trans_mnist)
+    elif args.dataset == 'cifar10':
+        dataset_train = datasets.CIFAR10("data/cifar10", train=True, download=True, transform=trans_cifar10_train)
+        dataset_test = datasets.CIFAR10("data/cifar10", train=False, download=True, transform=trans_cifar10_val)
+    else:
+        raise ValueError(f"Unsupported dataset: {args.dataset}")
+
     if args.iid:
         dict_users_train = iid(dataset_train, args.num_users) # 将训练数据集划分为num_users个用户   
         dict_users_test = iid(dataset_test, args.num_users) # 将测试数据集划分为num_users个用户

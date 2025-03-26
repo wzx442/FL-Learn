@@ -4,4 +4,6 @@
 
 /fedselect/data/cifar10/
 
-/PPVPFL/data/
+/PPVPFL/data/cifar10/
+
+/PPVPFL/data/mnist/MNIST/

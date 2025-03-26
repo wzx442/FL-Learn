@@ -2,7 +2,7 @@ import torch
 from typing import OrderedDict
 
 
-def broadcast_server_to_client_initialization(
+def broadcast_server_to_client_initialization( # 这个函数是用来将服务器权重广播到客户端初始化，不需要改
     server_weights: OrderedDict[str, torch.Tensor],
     mask: OrderedDict[str, torch.Tensor],
     client_initialization: OrderedDict[str, torch.Tensor],
@@ -18,14 +18,13 @@ def broadcast_server_to_client_initialization(
         Updated client model state dict with server weights broadcast to non-masked parameters 返回:更新后的客户端模型状态字典,其中非掩码参数已被服务器权重广播更新
     """
     for key in client_initialization.keys(): # 在第一轮，遍历客户端初始化字典的键
-        # only override client_initialization where mask is non-zero
-        # 仅在掩码为非零处覆盖client_initialization
+        # only override client_initialization where mask is non-zero 仅在掩码为非零处覆盖client_initialization
         if "weight" in key or "bias" in key:
             client_initialization[key][mask[key] == 0] = server_weights[key][mask[key] == 0] # 简单实现了哈达玛积
     return client_initialization
 
 
-def div_server_weights( 
+def div_server_weights( # 这个函数是用来将服务器权重除以掩码值，要改，改为用聚合的多项式系数除以权重
     server_weights: OrderedDict[str, torch.Tensor],
     server_mask: OrderedDict[str, torch.Tensor],
 ) -> OrderedDict[str, torch.Tensor]:
@@ -39,14 +38,13 @@ def div_server_weights(
         Server weights normalized by number of contributions 按贡献数量归一化的服务器权重
     """
     for key in server_weights.keys():
-        # only divide where server_mask is non-zero  仅在server_mask非零处进行除法
-        
+        # only divide where server_mask is non-zero  仅在server_mask非零处进行除法    
         if "weight" in key or "bias" in key:
             server_weights[key][server_mask[key] != 0] /= server_mask[key][server_mask[key] != 0] 
     return server_weights
 
 
-def add_masks(
+def add_masks( # 这个函数是用来将客户端的掩码累加到服务器掩码字典中，不需要改
     server_dict: OrderedDict[str, torch.Tensor],
     client_dict: OrderedDict[str, torch.Tensor],
     invert: bool = True,
@@ -72,7 +70,7 @@ def add_masks(
     return server_dict
 
 
-def add_server_weights(
+def add_server_weights( # 这个函数是用来将客户端的权重累加到服务器权重中，所以要改这个，让这个函数累加的是我们的多项式系数
     server_weights: OrderedDict[str, torch.Tensor],
     client_weights: OrderedDict[str, torch.Tensor],
     client_mask: OrderedDict[str, torch.Tensor],
@@ -89,7 +87,7 @@ def add_server_weights(
     Returns:
         Updated server weights accumulator 更新后的服务器权重累加器
     """
-    for key in client_weights.keys():
+    for key in client_weights.keys(): # 按位计算权重
         if "weight" in key or "bias" in key:
             mask = 1 - client_mask[key] if invert else client_mask[key]
             if key not in server_weights.keys():

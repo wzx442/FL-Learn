@@ -21,6 +21,7 @@ from broadcast import (
 import random
 from torchvision.models import resnet18
 from torchvision import models
+from models import load_model as load_model_from_models
 
 # =============================================
 # LOAD RESNET18 MODEL SECTION
@@ -172,6 +173,7 @@ def fedselect_algorithm(
     #####################################################################################################################
     # Begin FL
     #####################################################################################################################
+    model_params = 0 # 模型参数数量
     for round_num in range(com_rounds): # 遍历通信轮数
         round_loss = 0 # 本轮损失
         for i in idxs_users: # 遍历每个客户端
@@ -228,6 +230,10 @@ def fedselect_algorithm(
             client_accuracies[round_num][i] = accs[i] # 更新每个客户端的准确率
         print("Client Accs: ", accs, " | Mean: ", accs.mean()) # 打印每个客户端的准确率
 
+        if round_num == 0:
+            # 计算一个客户端的模型参数数量
+            model_params = sum(p.numel() for p in model.parameters())
+
         if round_num < com_rounds - 1:
             # Server averages u_i
             server_weights = div_server_weights(server_weights, server_accumulate_mask)
@@ -243,6 +249,8 @@ def fedselect_algorithm(
             server_accumulate_mask = OrderedDict() # 服务器累加掩码
             # noinspection PyTypeHints
             server_weights = OrderedDict() # 服务器权重
+
+    print(f"Round {round_num} model params: {model_params}")
 
     # 计算跨客户端准确率
     cross_client_acc = cross_client_eval(
@@ -363,45 +371,22 @@ def run_base_experiment(model: nn.Module, args: Any) -> None:
 
 
 def load_model(args: Any) -> nn.Module:
-    """Load and initialize model.加载和初始化模型。
+    """Load and initialize model.
     Args:
         args: Model arguments 模型参数
 
     Returns:
         nn.Module: Initialized model 初始化后的模型
     """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # 如果GPU可用,则使用GPU,否则使用CPU
-    args.device = device # 将设备设置为GPU或CPU
-    
-    # 使用新的权重加载方式
-    model = resnet18(weights=models.ResNet18_Weights.DEFAULT)  # 先加载未预训练的模型
-    
-    # 修改第一层卷积以适应CIFAR-10的32x32分辨率
-    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-    
-    # 使用Kaiming初始化
-    for m in model.modules():
-        if isinstance(m, nn.Conv2d):
-            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-        elif isinstance(m, nn.BatchNorm2d):
-            nn.init.constant_(m.weight, 1)
-            nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.Linear):
-            nn.init.normal_(m.weight, 0, 0.01)
-            nn.init.constant_(m.bias, 0)
-    
-    # 修改最后的全连接层
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, args.num_classes)
-    
-    # 将模型移动到指定设备
-    model = model.to(device)
-    
-    # 验证模型参数没有NaN值
-    for name, param in model.named_parameters():
-        if torch.isnan(param).any():
-            print(f"Warning: NaN detected in {name}")
-            param.data.zero_()  # 将NaN值替换为0
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    args.device = device
+    # Load the specified model
+    model = load_model_from_models(
+        model_name=args.model_name if hasattr(args, 'model_name') else 'resnet18',
+        num_classes=args.num_classes,
+        dataset=args.dataset if hasattr(args, 'dataset') else 'cifar10',
+        device=device
+    )
     
     return model
 
