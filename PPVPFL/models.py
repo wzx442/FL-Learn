@@ -109,16 +109,20 @@ def load_model(model_name: str, num_classes: int, dataset: str = 'cifar10', devi
     if model_name == 'cnn':
         if dataset == 'cifar10':
             model = CNN_CIFAR10(num_classes)
+            print("CNN_CIFAR10 model initialized")
         elif dataset == 'mnist':
             model = CNN_MNIST(num_classes)
+            print("CNN_MNIST model initialized")
         else:
             raise ValueError(f"Unknown dataset: {dataset}")
             
     elif model_name == 'mlp':
         if dataset == 'cifar10':
             model = MLP_CIFAR10(num_classes)
+            print("MLP_CIFAR10 model initialized")
         elif dataset == 'mnist':
             model = MLP_MNIST(num_classes)
+            print("MLP_MNIST model initialized")
         else:
             raise ValueError(f"Unknown dataset: {dataset}")
             
@@ -129,8 +133,10 @@ def load_model(model_name: str, num_classes: int, dataset: str = 'cifar10', devi
         # Modify first conv layer based on dataset
         if dataset == 'cifar10':
             model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False) # d = 3,179,082
+            print("ResNet18_CIFAR10 model initialized")
         elif dataset == 'mnist':
             model.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False) # d = 3,177,930
+            print("ResNet18_MNIST model initialized")
         else:
             raise ValueError(f"Unknown dataset: {dataset}")
         

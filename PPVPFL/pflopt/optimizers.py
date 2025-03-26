@@ -81,7 +81,7 @@ def local_alt(
     clip_grad_norm=False,
     max_grad_norm=3.50,
 ):
-    assert isinstance(optimizer, MaskLocalAltSGD), "optimizer must be MaskLocalAltSGD"
+    assert isinstance(optimizer, MaskLocalAltSGD), "optimizer must be MaskLocalAltSGD" # 断言优化器必须是MaskLocalAltSGD
     avg_loss_1 = 0
     for batch_idx, (data, target) in enumerate(data_loader):
         data, target = data.to(device), target.to(device)

@@ -30,6 +30,7 @@ def lth_args_parser():
     parser.add_argument("--exp_name",          type=str,   default="prune_rate_vary", help="experiment name 实验名称")
     parser.add_argument("--server_data_ratio", type=float, default=0.0,     help="The percentage of data that servers also have across data of all clients. 服务器拥有的数据占所有客户端数据的比例")
     parser.add_argument("--seed",              type=int,   default=1,       help="random seed (default: 1)")
+    parser.add_argument("--M",                 type=int,   default=100,     help="The number of parameters in each group. 每个分组的参数数量")
 
     args = parser.parse_args()
     return args
