@@ -7,17 +7,28 @@ PPVPFL 基于 fedselect 和 VCD-FL
 
 ## 文件结构说明
 
-- `fedselect.py`: 主要实现文件，包含核心的联邦学习训练逻辑和评估函数
-- `broadcast.py`: 实现服务器与客户端之间的权重广播和聚合功能
+- `main.py`: 运行文件
+- `fedselect.py`: 主要实现文件，包含 *核心* 的联邦学习训练逻辑和评估函数
+- `broadcast.py`: 实现服务器与客户端之间的 **权重广播** 和 **聚合功能**
 - `lottery_ticket.py`: 实现彩票假说相关的模型剪枝和掩码初始化功能
 - `pflopt/`: 优化器相关实现目录
   - 包含自定义优化器如 MaskLocalAltSGD
 - `utils/`: 工具函数目录
   - 包含数据加载、参数解析等辅助功能
 
+- `models.py`: 实现模型初始化，依据系统参数初始化联邦学习本地训练所用的模型(CNN、MLP、Resnet18)
+
+## 参数传输过程
+整个参数传输流程是：
+- 客户端使用本地数据训练模型（通过`train_personalized`函数）
+- 客户端将模型参数和掩码传给服务器（通过`add_server_weights`和`add_masks`函数）
+- 服务器对收到的参数进行聚合（在`div_server_weights`函数中）
+- 服务器将聚合后的参数广播回客户端（通过`broadcast_server_to_client_initialization`函数）
+这种实现方式支持个性化联邦学习，允许部分参数保持在本地（个性化参数），而其他参数则在全局共享和聚合（共享参数）。
+
 ## 环境要求
 
-- Python 3.12+
+- Python 3.7+
 - PyTorch
 - NumPy
 - tqdm
@@ -31,14 +42,16 @@ PPVPFL 基于 fedselect 和 VCD-FL
 
 2. 运行训练：
 ```bash
-python fedselect.py --dataset cifar10 --num_users 100 --frac 1.0
+python fedselect.py --dataset cifar10 --num_users 100 --frac 1.0 --model CNN --la_epochs 15
 ```
 
 主要参数说明：
-- `--dataset`: 选择数据集
+- `--dataset`: 选择数据集，默认是cifar10
 - `--num_users`: 联邦学习中的客户端数量
 - `--lth_epoch_iters`: 本地交替优化迭代次数
 - `--com_rounds`: 联邦学习迭代轮数
+- `--model`: 本地训练所用模型，默认为resnet18
+- `--la_epochs`: 本地训练轮数
 
 
 ## 运行记录

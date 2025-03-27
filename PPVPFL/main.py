@@ -23,6 +23,10 @@ from torchvision.models import resnet18
 from torchvision import models
 from models import load_model as load_model_from_models
 from fedselect import fedselect_algorithm, cross_client_eval
+from utils.log_utils import setup_logger, restore_stdout
+
+# 添加我的库
+from Enc_and_Dec.init import init_seed_pair
 
 
 def get_cross_correlation(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
@@ -102,12 +106,25 @@ def setup_seed(seed: int) -> None:
     random.seed(seed) # 设置随机种子
 
 
+
+# 主函数
 if __name__ == "__main__":
-    # Argument Parser
-    args = lth_args_parser()
+    # 设置日志记录
+    original_stdout = setup_logger("training_log.txt")
+    
+    try:
+        # Argument Parser
+        args = lth_args_parser()
+        # 初始化种子对
+        seed_pairs = init_seed_pair(args.num_users)
+        print(f"seed_pairs: {seed_pairs}")
 
-    # Set the seed
-    setup_seed(args.seed)
-    model = load_model(args)
+        # Set the seed
+        setup_seed(args.seed)
+        model = load_model(args)
 
-    run_base_experiment(model, args)
+        run_base_experiment(model, args)
+        
+    finally:
+        # 确保在程序结束时恢复stdout
+        restore_stdout(original_stdout)

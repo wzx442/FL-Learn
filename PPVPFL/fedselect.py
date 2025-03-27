@@ -16,6 +16,9 @@ from broadcast import (
     add_server_weights,
 )
 
+# 自定义库
+from Enc_and_Dec.init import init_A, init_R
+
 def cross_client_eval(
     model: nn.Module, # 模型
     client_state_dicts: Dict[int, OrderedDict], # 客户端模型状态
@@ -114,6 +117,9 @@ def fedselect_algorithm(
     prune_target = args.prune_target / 100 # 剪枝目标
     lottery_ticket_convergence = [] # 彩票收敛历史
 
+    # 系数集合
+    B = []
+
 
     #####################################################################################################################
     # Begin FL
@@ -121,6 +127,8 @@ def fedselect_algorithm(
     model_params = 0 # 模型参数数量
     M = args.M # 每个分组的参数数量
     num_group = 0 # 分组数量
+    A_dict = [] # 初始化A，用来保存所有客户端的随机整数序列
+    flag_A = False # 是否初始化A
     for round_num in range(com_rounds): # 遍历通信轮数
         round_loss = 0 # 本轮损失
         for i in idxs_users: # 遍历每个客户端
@@ -128,11 +136,23 @@ def fedselect_algorithm(
             model.load_state_dict(client_state_dicts[i]) # 加载客户端模型状态
             model_params = sum(p.numel() for p in model.parameters()) # 计算模型参数数量
             # print(f"In round {round_num}, client {i} model params number: {model_params}")
+
             # 计算分组数量。分组策略：将模型参数分组，每组M个，如果最后一组的参数数量小于M，则用0填充。
             num_group = model_params // M
             if model_params % M != 0:
                 num_group += 1
             print(f"In round {round_num}, client {i} model params number: {model_params}, num_group: {num_group}")
+
+            #######################从这里初始化######################
+            if round_num == 0 and not flag_A:  # 只需要初始化一次
+                # 初始化A，用来保存所有客户端的随机整数序列
+                A_dict = init_A(len(idxs_users), num_group) # 初始化A，用来保存所有客户端的随机整数序列
+                # 初始化R，所有客户端共享一个R
+                R = init_R(len(idxs_users), num_group)
+                flag_A = True # 标记A已经初始化
+                print(f"A_dict: {A_dict}")
+                print(f"R: {R}")
+
             # get data
             # ldr_train:训练数据加载器
             ldr_train, _ = prepare_dataloaders(
@@ -148,9 +168,10 @@ def fedselect_algorithm(
             # 0s are global parameters, 1s are local parameters 0表示全局参数,1表示本地参数
             client_model, loss = train_personalized(model, ldr_train, client_mask, args)
             round_loss += loss
-            # Send u_i update to server
+            # Send u_i update to server 将u_i更新发送给服务器 在这里改
             if round_num < com_rounds - 1:
                 server_accumulate_mask = add_masks(server_accumulate_mask, client_mask)
+                # 将客户端模型参数和掩码添加到服务器权重中
                 server_weights = add_server_weights(
                     server_weights, client_model.state_dict(), client_mask
                 )
